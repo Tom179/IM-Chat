@@ -1,0 +1,62 @@
+syntax="proto3";
+package user;
+
+option go_package="./user";//指定 Go 代码生成的包路径
+
+message UserEntity{
+  string id=1;
+  string avatar=2;
+  string nickname=3;
+  string phone=4;
+  int32  status=5;
+  int32  gender=6;//性别
+}
+message pingReq{
+  string ping=1;
+}
+message pingResp{
+  string pong=1;
+}
+message RegisterReq{//Proto这边需要全字段，补好默认的再传
+  string phone=1;
+  string nickname=2;
+  string password=3;
+  string avatar=4;
+  int32 gender=5;
+}
+message RegisterResp{//为什么注册成功后返回token?
+  string Token=1;
+  int64 expire=2;
+}
+message LoginReq{
+  string phone=1;
+  string password=2;
+}
+message LoginResp{
+  string Token=1;
+  string expire=2;
+}
+
+message GetUserInfoReq{
+  string id=1;
+}
+message GetUserInfoResp{
+  UserEntity user=1;
+}
+message FindUserReq{//根据三种不同的方式模糊查找目标用户？
+  string name=1;
+  string phone=2;
+  repeated string ids=3;
+}
+message FindUserResp{
+  repeated UserEntity user=1;
+}
+
+service User{
+  rpc Ping(pingReq)returns(pingResp);
+  rpc Register(RegisterReq)returns(RegisterResp);
+  rpc Login(LoginReq)returns(LoginResp);
+  rpc GetUserInfo(GetUserInfoReq)returns(GetUserInfoResp);
+  rpc FindUsers(FindUserReq)returns(FindUserResp);//查找用户列表
+}
+

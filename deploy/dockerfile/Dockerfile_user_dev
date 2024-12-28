@@ -1,0 +1,9 @@
+#FROM alpine:3.18.4
+#ARG SERVER_NAME=user
+#ARG SERVER_TYPE=rpc
+#
+#ENV RUN_BIN bin/${SERVER_NAME}-${SERVER_TYPE}
+#ENV RUN_CONF /${SERVER_NAME}/conf/${SERVER_NAME}.yaml
+#
+#RUN mkdir -p /$SERVER_NAME/bin && mkdir /$SERVER_NAME/conf
+#COPY ./bin/$SERVER_NAME-$SERVER_TYPE
