@@ -1,0 +1,19 @@
+Name: user.rpc
+ListenOn: 0.0.0.0:10000
+Etcd:
+  Hosts:
+  - 117.50.194.80:3379
+  Key: user.rpc
+
+Mysql:
+  DataSource: root:chat@tcp(117.50.194.80:13306)/sys?charset-utf8mb4
+
+Cache:
+  - Host: 117.50.194.80:16379
+    Type: node
+    Pass: chat
+
+Jwt:
+  AccessKey: immoc.com
+  AccessExpire: 864000 # 60*60*24* 100天
+  
