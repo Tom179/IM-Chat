@@ -32,8 +32,12 @@ type (
 		FindOne(ctx context.Context, id string) (*Users, error)
 		Update(ctx context.Context, data *Users) error
 		FindByPhone(ctx context.Context, phone string) (*Users, error)
-Delete(ctx context.Context, id string) error
+		Delete(ctx context.Context, id string) error
+		FindByName(ctx context.Context, name string) ([]*Users, error)
+		FindByIds(ctx context.Context, Ids []string) ([]*Users, error)
 	}
+
+
 
 	defaultUsersModel struct {
 		sqlc.CachedConn
@@ -90,9 +94,11 @@ func (m *defaultUsersModel) FindOne(ctx context.Context, id string) (*Users, err
 
 func (m *defaultUsersModel) FindByPhone(ctx context.Context, phone string) (*Users, error) {
 	usersIdKey := fmt.Sprintf("%s%v", cacheUsersIdPrefix, phone)
+	
+	query := fmt.Sprintf("select %s from %s where `phone` = ? limit 1", usersRows, m.table)
+
 	var resp Users
 	err := m.QueryRowCtx(ctx, &resp, usersIdKey, func(ctx context.Context, conn sqlx.SqlConn, v any) error {
-		query := fmt.Sprintf("select %s from %s where `phone` = ? limit 1", usersRows, m.table)
 		return conn.QueryRowCtx(ctx, v, query, phone)
 	})
 	switch err {
@@ -104,6 +110,38 @@ func (m *defaultUsersModel) FindByPhone(ctx context.Context, phone string) (*Use
 		return nil, err
 	}
 }
+
+
+func (m *defaultUsersModel) FindByName(ctx context.Context, name string) ([]*Users, error) {
+
+	 query:=fmt.Sprintf("select %s from %s where `nickname` like ?",usersRows,m.table)
+	
+	var resp []*Users
+	err:=m.QueryRowsNoCacheCtx(ctx,&resp,query,fmt.Sprint("%",name,"%"))
+	switch err{
+	case nil:
+		return resp,nil
+	default:
+		return nil,err
+	}
+ }
+
+
+ func (m *defaultUsersModel) FindByIds(ctx context.Context, Ids []string) ([]*Users, error) {
+	//todo 传入多个id时会出错，in‘拼接错误’
+	query:=fmt.Sprintf("select %s from %s where `id` in('%s')",usersRows,m.table,strings.Join(Ids,","))
+   fmt.Println("sql语句：",query)
+   var resp []*Users
+   err:=m.QueryRowsNoCacheCtx(ctx,&resp,query)
+   fmt.Println("DB查询结果为 ",resp)
+   switch err{
+   case nil:
+	   return resp,nil
+   default:
+	   return nil,err
+   }
+}
+
 
 func (m *defaultUsersModel) Insert(ctx context.Context, data *Users) (sql.Result, error) {
 	usersIdKey := fmt.Sprintf("%s%v", cacheUsersIdPrefix, data.Id)
@@ -118,7 +156,7 @@ func (m *defaultUsersModel) Update(ctx context.Context, data *Users) error {
 	usersIdKey := fmt.Sprintf("%s%v", cacheUsersIdPrefix, data.Id)
 	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, usersRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, data.Avatar, data.Nickname, data.Phone, data.Password, data.Status, data.Gender, data.Id)
+		return  conn.ExecCtx(ctx, query, data.Avatar, data.Nickname, data.Phone, data.Password, data.Status, data.Gender, data.Id)
 	}, usersIdKey)
 	return err
 }

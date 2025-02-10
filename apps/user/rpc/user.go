@@ -8,6 +8,7 @@ import (
 	"Im-chat/Chat/apps/user/rpc/internal/server"
 	"Im-chat/Chat/apps/user/rpc/internal/svc"
 	"Im-chat/Chat/apps/user/rpc/user"
+	"Im-chat/Chat/pkg/interceptor/rpcserver"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"
@@ -34,6 +35,9 @@ func main() {
 	})
 	defer s.Stop()
 
+	s.AddUnaryInterceptors(rpcserver.LogInterceptor) //添加错误日志拦截器
+
 	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
 	s.Start()
 }
+ 

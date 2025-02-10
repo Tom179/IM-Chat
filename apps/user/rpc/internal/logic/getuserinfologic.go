@@ -1,15 +1,18 @@
 package logic
 
 import (
-	"Im-chat/Chat/apps/user/models"
 	"context"
 	"errors"
 
+	"Im-chat/Chat/apps/user/models"
 	"Im-chat/Chat/apps/user/rpc/internal/svc"
 	"Im-chat/Chat/apps/user/rpc/user"
 
+	"github.com/jinzhu/copier"
 	"github.com/zeromicro/go-zero/core/logx"
 )
+
+var ErrUserNotFound = errors.New("用户不存在")
 
 type GetUserInfoLogic struct {
 	ctx    context.Context
@@ -35,5 +38,10 @@ func (l *GetUserInfoLogic) GetUserInfo(in *user.GetUserInfoReq) (*user.GetUserIn
 		return nil, err
 	}
 
-	return &user.GetUserInfoResp{}, nil
+	// fmt.Println("查询到用户为:", one)
+
+	var respUser user.UserEntity
+	copier.Copy(&respUser, one)
+
+	return &user.GetUserInfoResp{User: &respUser}, nil
 }

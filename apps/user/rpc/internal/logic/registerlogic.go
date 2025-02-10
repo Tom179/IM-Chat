@@ -5,14 +5,15 @@ import (
 	"Im-chat/Chat/pkg/ctxdata"
 	"Im-chat/Chat/pkg/encrypt"
 	"Im-chat/Chat/pkg/wuid"
+	"Im-chat/Chat/pkg/xerr"
 	"context"
 	"database/sql"
-	"errors"
 	"time"
 
 	"Im-chat/Chat/apps/user/rpc/internal/svc"
 	"Im-chat/Chat/apps/user/rpc/user"
 
+	"github.com/pkg/errors"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -23,7 +24,7 @@ type RegisterLogic struct {
 }
 
 var (
-	ErrPhoneRegisted = errors.New("手机号码已注册")
+	ErrPhoneRegisted = xerr.New(xerr.SERVER_COMMON_ERROR, "手机号已注册")
 )
 
 func NewRegisterLogic(ctx context.Context, svcCtx *svc.ServiceContext) *RegisterLogic {
@@ -38,11 +39,11 @@ func (l *RegisterLogic) Register(in *user.RegisterReq) (*user.RegisterResp, erro
 
 	userEntity, err := l.svcCtx.UsersModel.FindByPhone(l.ctx, in.Phone)
 	if err != nil && err != models.ErrNotFound {
-		return nil, err
+		return nil, errors.Wrapf(xerr.NewDBError(), "根据手机查询用户错误 %v, req %v", err, in.Phone)
 	}
 
 	if userEntity != nil { //用户已存在，注册失败
-		return nil, ErrPhoneRegisted
+		return nil, errors.WithStack(ErrPhoneRegisted)
 	}
 
 	userEntity = &models.Users{
@@ -60,22 +61,22 @@ func (l *RegisterLogic) Register(in *user.RegisterReq) (*user.RegisterResp, erro
 	if len(in.Password) > 0 { //密码加密
 		genPass, err := encrypt.GenPasswordHash([]byte(in.Password))
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrapf(xerr.NewInternalErr(), "密码加密错误 %v", err)
 		}
 		userEntity.Password = sql.NullString{
-			string(genPass),
-			true,
+			String: string(genPass),
+			Valid:  true,
 		}
 	}
 
 	_, err = l.svcCtx.UsersModel.Insert(l.ctx, userEntity)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(xerr.NewDBError(), "创建用户错误 %v", err)
 	}
 	now := time.Now().Unix()
 	token, err := ctxdata.GetJwtToken(l.svcCtx.Config.Jwt.AccessKey, now, l.svcCtx.Config.Jwt.AccessExpire, userEntity.Id)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(xerr.NewInternalErr(), "生成jwt错误 %v", err)
 	}
 
 	return &user.RegisterResp{Token: token, Expire: now + l.svcCtx.Config.Jwt.AccessExpire}, nil
