@@ -3,11 +3,12 @@ package logic
 import (
 	"Im-chat/Chat/apps/user/rpc/user"
 	"context"
+	"fmt"
 	"testing"
 )
 
 func TestRegisterLogic_Register(t *testing.T) {
-
+	fmt.Println("开始测试test")
 	type args struct {
 		in *user.LoginReq
 	}

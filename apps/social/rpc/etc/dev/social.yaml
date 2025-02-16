@@ -1,0 +1,15 @@
+Name: social.rpc
+ListenOn: 0.0.0.0:10001
+Etcd:
+  Hosts:
+  - 117.50.194.80:3379
+  Key: user.rpc
+  
+
+Mysql:
+  DataSource: root:chat@tcp(117.50.194.80:13306)/sys?charset-utf8mb4
+
+Cache:
+  - Host: 117.50.194.80:16379
+    Type: node
+    Pass: chat

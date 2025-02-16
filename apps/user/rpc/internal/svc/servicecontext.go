@@ -3,14 +3,15 @@ package svc
 import (
 	"Im-chat/Chat/apps/user/models"
 	"Im-chat/Chat/apps/user/rpc/internal/config"
+
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
 //微服务配置初始化模块
 
 type ServiceContext struct {
-	Config config.Config
-	models.UsersModel
+	Config config.Config  
+	models.UsersModel 
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {

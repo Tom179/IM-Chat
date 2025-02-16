@@ -13,6 +13,8 @@ require (
 	google.golang.org/protobuf v1.36.1
 )
 
+require github.com/golang-jwt/jwt/v4 v4.5.1 // indirect
+
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
